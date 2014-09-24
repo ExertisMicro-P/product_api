@@ -55,7 +55,7 @@ if (!empty($partcode)) {
             $im = file_get_contents($imagefilename);
         else {
             $im = getImage('http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/' . $imagefilename);
-            file_put_contents('./' . $imagefilename, $im);
+            file_put_contents('./images/' . $imagefilename, $im);
         }
 
         header("Content-type: image/jpeg");
@@ -67,48 +67,48 @@ if (!empty($partcode)) {
     $icomUrl = 'http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/product/' . $orimagename;
 
     // grab image from cache if possibel, otherwise pull from Icom server
-    if (file_exists($orimagename)) {
+    if (file_exists('./images/'.$orimagename)) {
         // check how old the cached version is
-        if (time() - filemtime($orimagename) > 72 * 3600 || (filesize($orimagename) == 0)) {
+        if (time() - filemtime('./images/'.$orimagename) > 72 * 3600 || (filesize('./images/'.$orimagename) == 0)) {
             // it's older than 72 hours, refresh the cache, by pulling from I-com again
             $im = getImage($icomUrl);
 
             if ($im !== FALSE) {
                 // Cache image locally under two filenames - OR name and Exertis Micro-P Oracle partcode
-                file_put_contents('./' . $orimagename, $im);
-                $ext = pathinfo($orimagename, PATHINFO_EXTENSION);
-                file_put_contents('./' . $partcode . '.' . $ext, $im);
+                file_put_contents('./images/' . $orimagename, $im);
+                $ext = pathinfo('./images/'.$orimagename, PATHINFO_EXTENSION);
+                file_put_contents('./images/' . $partcode . '.' . $ext, $im);
 
-                $failedfilename = './' . $partcode . '.FAILED.' . $ext;
+                $failedfilename = './images/' . $partcode . '.FAILED.' . $ext;
                 if (file_exists($failedfilename)) {
-                    unlink('./' . $partcode . '.FAILED.' . $ext);
+                    unlink('./images/'. $partcode . '.FAILED.' . $ext);
                 }
             } else {
-                $ext = pathinfo($rows[0]['image'], PATHINFO_EXTENSION);
-                $failedfilename = './' . $partcode . '.FAILED.' . $ext;
+                $ext = pathinfo($orimagename, PATHINFO_EXTENSION);
+                $failedfilename = './images/' . $partcode . '.FAILED.' . $ext;
                 file_put_contents($failedfilename, $im);
             }
         } else {
             // use the cached version, is fresh enough and it's not empty
-            $im = file_get_contents($orimagename);
+            $im = file_get_contents('./images/'.$orimagename);
         }
     } else {
         // We don't have a cached image
         $im = getImage($icomUrl);
         // Cache image locally under two filenames - OR name and Exertis Micro-P Oracle partcode
-        file_put_contents('./' . $orimagename, $im);
-        $ext = pathinfo($orimagename, PATHINFO_EXTENSION);
-        file_put_contents('./' . $partcode . '.' . $ext, $im);
+        file_put_contents('./images/' . $orimagename, $im);
+        $ext = pathinfo('./images/'.$orimagename, PATHINFO_EXTENSION);
+        file_put_contents('./images/' . $partcode . '.' . $ext, $im);
     }
 } else {
 
     // grab default image from cache if possible, otherwise pull from Icom server
     $imagefilename = 'product_default.gif';
-    if (file_exists($imagefilename))
-        $im = file_get_contents($imagefilename);
+    if (file_exists('./images/'.$imagefilename))
+        $im = file_get_contents('./images/'.$imagefilename);
     else {
         $im = getImage('http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/' . $imagefilename);
-        file_put_contents('./' . $imagefilename, $im);
+        file_put_contents('./images/' . $imagefilename, $im);
     }
 }
 

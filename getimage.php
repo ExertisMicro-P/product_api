@@ -24,14 +24,6 @@ function getImage($url, $useCurl = false) {
     }
 }
 
-try {
-
-
-    # MySQL with PDO_MYSQL
-    $db = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
-} catch (PDOException $e) {
-    echo $e->getMessage();
-}
 
 
 if (empty($_REQUEST['p']))

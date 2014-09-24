@@ -1,2 +1,4 @@
 web1:
   shared_writable_dirs: [images]
+  php_error_reporting: 30719 # Equivalent to E_ALL
+  php_display_errors: "1"

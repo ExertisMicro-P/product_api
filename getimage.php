@@ -35,12 +35,18 @@ if (empty($_REQUEST['p']))
 $partcode = strtoupper($_REQUEST['p']);
 
 
+/// set src=mp on the query string to grab details from the media poll rather than the standard OR image
+if (isset($_REQUEST['src']))
+    $source = $_REQUEST['src'];
+else
+    $source = 'std';
+
 
 if (!empty($partcode)) {
     //print_r($rows); die();
     // Oracle knows this product
     //$lookupUrl = 'http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/product/'.$rows[0]['image'];
-    $lookupUrl = 'http://apps2.exertismicro-p.co.uk/product_api/lookuporid.php?p=' . $partcode;
+    $lookupUrl = 'http://apps2.exertismicro-p.co.uk/product_api/lookuporid.php?p=' . $partcode. ($source=='mp' ? '&src=mp' : '');
 
     $orimagename = file_get_contents($lookupUrl);
     if (empty($orimagename)) {
@@ -60,7 +66,7 @@ if (!empty($partcode)) {
 
     // otherwise pull from Icom server, or from the OR Media Pool
     if ($source=='mp')
-        $libraryUrl = $orimagename;
+        $libraryUrl = $orimagename.'&v=HR';// make sure we get the largest size, otherwise it defaults to 300px
     else
         $libraryUrl = 'http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/product/' . $orimagename;
 
@@ -94,8 +100,11 @@ if (!empty($partcode)) {
         // We don't have a cached image
         $im = getImage($libraryUrl);
         // Cache image locally under two filenames - OR name and Exertis Micro-P Oracle partcode
-        file_put_contents('./images/' . $orimagename, $im);
-        $ext = pathinfo('./images/'.$orimagename, PATHINFO_EXTENSION);
+        if ($source!='mp') {
+            file_put_contents('./images/' . $orimagename, $im);
+            $ext = pathinfo('./images/'.$orimagename, PATHINFO_EXTENSION);
+        } else
+            $ext='jpg';
         file_put_contents('./images/' . $partcode . '.' . $ext, $im);
     }
 } else {

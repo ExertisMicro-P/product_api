@@ -48,7 +48,7 @@ $splitforrawcode = explode('@',$partcode);
 
 $partcode = $splitforrawcode[0];
 
-$stmt = $db->prepare("SELECT id, image, manufacturer FROM epic_or_products WHERE oracle_part_no = :partcode LIMIT 1");
+$stmt = $db->prepare("SELECT product_id, image, manufacturer FROM epic_or_products WHERE oracle_part_no = :partcode LIMIT 1");
 $stmt->bindValue(':partcode', $partcode, PDO::PARAM_STR);
 $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -73,9 +73,15 @@ if (!empty($rows)) {
 
     } else {
         // attempt to get image from media pool
+        $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id order by GREATEST(width,height) DESC LIMIT 1");
+        $stmt->bindValue(':id', $rows[0]['product_id'], PDO::PARAM_STR);
+        $stmt->execute();
+        $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Search table for product ID
-
+        if (!empty($media)) {
+            echo $media[0]['url'];
+            exit();
+        }
 
     }
 }

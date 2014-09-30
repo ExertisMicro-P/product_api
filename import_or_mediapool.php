@@ -7,6 +7,18 @@
  */
 
 
+/*
+ * STATUS
+ * Need to write code which pulls from a file, rather than a URL.
+ * Have asked Cliff to implement a file mover
+ *
+ * To be tested.
+ * No testing perofrmed yet.
+ * This needs to live on ma-webproxy-04, with lookuporid.php
+ *
+ * getimage will live on PagodaBox http://product-api.gopagoda.com
+ */
+
 $ormediapoolurl = 'http://mediapool.getthespec.com/MediaPoolServices/MediaList.txt?u=ca0fd82e-199c-4b80-92d7-a97132698d47';
 $daily = '&t=D';
 $complete = '&t=C';

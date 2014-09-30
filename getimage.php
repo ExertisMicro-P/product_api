@@ -5,6 +5,9 @@
  * It then tries to fetch and cache the image
  */
 
+// Set to mp if you want to fetch images from the OR Media Portal
+$source = 'mp';
+
 function getImage($url, $useCurl = false) {
 
     if ($useCurl) {
@@ -55,15 +58,18 @@ if (!empty($partcode)) {
         exit();
     }
 
+    // otherwise pull from Icom server, or from the OR Media Pool
+    if ($source=='mp')
+        $libraryUrl = $orimagename;
+    else
+        $libraryUrl = 'http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/product/' . $orimagename;
 
-    $icomUrl = 'http://www.exertismicro-p.co.uk/ImagesPortal/UK/Catalogue/product/' . $orimagename;
-
-    // grab image from cache if possibel, otherwise pull from Icom server
+    // grab image from cache if possible, otherwise pull from Icom server, or OR MediaPool
     if (file_exists('./images/'.$orimagename)) {
         // check how old the cached version is
         if (time() - filemtime('./images/'.$orimagename) > 72 * 3600 || (filesize('./images/'.$orimagename) == 0)) {
             // it's older than 72 hours, refresh the cache, by pulling from I-com again
-            $im = getImage($icomUrl);
+            $im = getImage($libraryUrl);
 
             if ($im !== FALSE) {
                 // Cache image locally under two filenames - OR name and Exertis Micro-P Oracle partcode
@@ -86,7 +92,7 @@ if (!empty($partcode)) {
         }
     } else {
         // We don't have a cached image
-        $im = getImage($icomUrl);
+        $im = getImage($libraryUrl);
         // Cache image locally under two filenames - OR name and Exertis Micro-P Oracle partcode
         file_put_contents('./images/' . $orimagename, $im);
         $ext = pathinfo('./images/'.$orimagename, PATHINFO_EXTENSION);

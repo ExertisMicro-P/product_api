@@ -49,7 +49,7 @@ if (!empty($partcode)) {
     $lookupUrl = 'http://apps2.exertismicro-p.co.uk/product_api/lookuporid.php?p=' . $partcode. ($source=='mp' ? '&src=mp' : '');
 
     $orimagename = file_get_contents($lookupUrl);
-    if (empty($orimagename)) {
+    if (empty($orimagename) && !isset($_REQUEST['force'])) {
         // grab default image from cache if possible, otherwise pull from Icom server
         $imagefilename = 'product_default.gif';
         if (file_exists($imagefilename))

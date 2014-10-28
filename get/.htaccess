@@ -1,4 +1,4 @@
-Options -Indexes
-
-RewriteEngine on
-RewriteRule /get/(.+)\.jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1
+RewriteEngine On
+RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1 [NC,L]
+#RewriteRule jumpers index.html
+#RewriteRule    ^pet-care/?$    pet_care_info_01_02_2008.php    [NC,L]    # Handle requests for "pet-care"

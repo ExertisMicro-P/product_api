@@ -1,5 +1,4 @@
 Options -Indexes
-<IfModule mod_rewrite.c>
+
 RewriteEngine on
 RewriteRule /get/(.+)\.jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1
-</IfModule>

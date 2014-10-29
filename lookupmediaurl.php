@@ -18,7 +18,9 @@ $dbname = 'epic';
 $user='russellh';
 $pass='sl58jySL%*JY';
 
-
+$manual_images_path = './images/';
+//$manual_images_url = 'http://apps2.exertismicro-p.co.uk/product_api/images/';
+$manual_images_url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/images/';
 
 
 try {
@@ -87,5 +89,14 @@ if (!empty($rows)) {
     }
 }
 
-echo 'product_default.gif';
+
+// if we still can't find the image, do one last check for images we supply manually
+if (file_exists($manual_images_path.$partcode.'.jpg')) {
+    echo "<pre>";
+    var_dump($_SERVER);
+    echo "</pre>";
+    echo $manual_images_url.$partcode.'.jpg';
+} else {
+    echo 'product_default.gif';
+}
 ?>

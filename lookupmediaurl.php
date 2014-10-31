@@ -20,7 +20,7 @@ $pass='sl58jySL%*JY';
 
 $manual_images_path = './images/';
 //$manual_images_url = 'http://apps2.exertismicro-p.co.uk/product_api/images/';
-$manual_images_url = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/images/';
+$manual_images_url = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/images/';
 
 
 try {
@@ -81,7 +81,7 @@ if (!empty($rows)) {
         $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if (!empty($media)) {
-            $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=','http://product-api.gopagoda.com/get/',$media[0]['url']);
+            $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=','http://product-api.gopagoda.com/get/',urldecode($media[0]['url']));
             echo $url.'.jpg';
             exit();
         }
@@ -92,9 +92,11 @@ if (!empty($rows)) {
 
 // if we still can't find the image, do one last check for images we supply manually
 if (file_exists($manual_images_path.$partcode.'.jpg')) {
-    echo "<pre>";
+    /*echo "<pre>";
     var_dump($_SERVER);
     echo "</pre>";
+     *
+     */
     echo $manual_images_url.$partcode.'.jpg';
 } else {
     echo 'product_default.gif';

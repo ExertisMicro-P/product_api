@@ -56,8 +56,6 @@ $stmt->execute();
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-
-
 if (!empty($rows)) {
     // we found a match for our oracle partcode
 
@@ -74,31 +72,35 @@ if (!empty($rows)) {
         }
 
     } else {
-        // attempt to get image from media pool
-        $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id order by GREATEST(width,height) DESC LIMIT 1");
-        $stmt->bindValue(':id', $rows[0]['product_id'], PDO::PARAM_STR);
-        $stmt->execute();
-        $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // src == mp - attempt to get from media pool, unless we have a manually sourced image
 
-        if (!empty($media)) {
-            $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=','http://product-api.gopagoda.com/get/',urldecode($media[0]['url']));
-            echo $url.'.jpg';
+
+        // if we still can't find the image, do one last check for images we supply manually
+        if (file_exists($manual_images_path.$partcode.'.jpg')) {
+            /*echo "<pre>";
+            var_dump($_SERVER);
+            echo "</pre>";
+             */
+            echo $manual_images_url.$partcode.'.jpg';
             exit();
+
+        } else {
+
+            // attempt to get image from media pool
+            $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id AND media_type='IMG' order by GREATEST(width,height) DESC, display_order ASC LIMIT 1");
+            $stmt->bindValue(':id', $rows[0]['product_id'], PDO::PARAM_STR);
+            $stmt->execute();
+            $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if (!empty($media)) {
+                $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=','http://product-api.gopagoda.com/get/',urldecode($media[0]['url']));
+                echo $url.'.jpg';
+                exit();
+            }
+
         }
-
-    }
+    } // if source
 }
+echo 'product_default.gif';
 
-
-// if we still can't find the image, do one last check for images we supply manually
-if (file_exists($manual_images_path.$partcode.'.jpg')) {
-    /*echo "<pre>";
-    var_dump($_SERVER);
-    echo "</pre>";
-     *
-     */
-    echo $manual_images_url.$partcode.'.jpg';
-} else {
-    echo 'product_default.gif';
-}
 ?>

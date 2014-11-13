@@ -1,4 +1,5 @@
 RewriteEngine On
+RewriteMap esc int:unescape
 RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=${esc:$1} [NC,L]
 #RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1 [NC,L]
 #RewriteRule jumpers index.html

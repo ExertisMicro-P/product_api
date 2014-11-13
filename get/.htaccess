@@ -1,6 +1,6 @@
 RewriteEngine On
-RewriteMap esc int:escape
-RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=${esc:$1} [NC,L]
+#RewriteMap unescape int:unescape
+RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1 [B,NE,NC,L]
 #RewriteRule (.+).jpg http://mediapool.getthespec.com/media.jpg?v=HR&m=$1 [NC,L]
 #RewriteRule jumpers index.html
 #RewriteRule    ^pet-care/?$    pet_care_info_01_02_2008.php    [NC,L]    # Handle requests for "pet-care"

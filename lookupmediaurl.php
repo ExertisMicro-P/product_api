@@ -15,23 +15,23 @@
 
 $host = 'intdb3';
 $dbname = 'epic';
-$user='russellh';
-$pass='sl58jySL%*JY';
+$user = 'russellh';
+$pass = 'sl58jySL%*JY';
 
 $manual_images_path = './images/';
 //$manual_images_url = 'http://apps2.exertismicro-p.co.uk/product_api/images/';
-$manual_images_url = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['SCRIPT_NAME']).'/images/';
+$manual_images_url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/images/';
+//$manual_images_url = 'http://product-api.gopagoda.com/images/';
 
 
 try {
 
 
-  # MySQL with PDO_MYSQL
-  $db = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
-
-}
-catch(PDOException $e) {
+    # MySQL with PDO_MYSQL
+    $db = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
+} catch (PDOException $e) {
     echo $e->getMessage();
+    exit();
 }
 
 
@@ -46,61 +46,57 @@ else
     $source = 'std';
 
 // remove anything after the @
-$splitforrawcode = explode('@',$partcode);
+$splitforrawcode = explode('@', $partcode);
 
 $partcode = $splitforrawcode[0];
 
-$stmt = $db->prepare("SELECT product_id, image, manufacturer FROM epic_or_products WHERE oracle_part_no = :partcode LIMIT 1");
-$stmt->bindValue(':partcode', $partcode, PDO::PARAM_STR);
-$stmt->execute();
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// try to get a manually sourced image first
+if (file_exists($manual_images_path . $partcode . '.jpg')) {
+    /* echo "<pre>";
+      var_dump($_SERVER);
+      echo "</pre>";
+     */
+    echo $manual_images_url . $partcode . '.jpg';
+    exit();
+} else {
+
+    // no manaually sourced, image, go huntiung for Open Range matchup
+    $stmt = $db->prepare("SELECT product_id, image, manufacturer FROM epic_or_products WHERE oracle_part_no = :partcode LIMIT 1");
+    $stmt->bindValue(':partcode', $partcode, PDO::PARAM_STR);
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-if (!empty($rows)) {
-    // we found a match for our oracle partcode
+    if (!empty($rows)) {
+        // Open Range knows about our oracle partcode
 
-    if ($source!='mp') {
+        if ($source != 'mp') {
 
-        // return a standard OR image
-        if(!empty($rows[0]['image'])) {
-            ////print_r($rows); die();
-            // Oracle knows this product
+            // return a standard OR image
+            if (!empty($rows[0]['image'])) {
+                ////print_r($rows); die();
+                // Oracle knows this product
 
-            echo  $rows[0]['image']; // e.g. OR800000029065.jpg
-            exit();
-
-        }
-
-    } else {
-        // src == mp - attempt to get from media pool, unless we have a manually sourced image
-
-
-        // if we still can't find the image, do one last check for images we supply manually
-        if (file_exists($manual_images_path.$partcode.'.jpg')) {
-            /*echo "<pre>";
-            var_dump($_SERVER);
-            echo "</pre>";
-             */
-            echo $manual_images_url.$partcode.'.jpg';
-            exit();
-
+                echo $rows[0]['image']; // e.g. OR800000029065.jpg
+                exit();
+            }
         } else {
-
-            // attempt to get image from media pool
+            // src == mp - attempt to get from media pool
             $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id AND media_type='IMG' order by GREATEST(width,height) DESC, display_order ASC LIMIT 1");
             $stmt->bindValue(':id', $rows[0]['product_id'], PDO::PARAM_STR);
             $stmt->execute();
             $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if (!empty($media)) {
-                $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=','http://product-api.gopagoda.com/get/',urldecode($media[0]['url']));
-                echo $url.'.jpg';
+                $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=', 'http://product-api.gopagoda.com/get/', urldecode($media[0]['url']));
+                echo $url . '.jpg';
                 exit();
             }
+        } // if source
+    } // if empty rows
+} // if we have manually sourced image
 
-        }
-    } // if source
-}
+
+// nothing matched or found, return default
 echo 'product_default.gif';
-
 ?>

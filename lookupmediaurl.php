@@ -36,7 +36,7 @@ try {
 
 
 
-$partcode = $_REQUEST['p'];
+$fullpartcode = $_REQUEST['p'];
 
 
 /// set src=mp on the query string to grab details from the media poll rather than the standard OR image
@@ -45,8 +45,20 @@ if (isset($_REQUEST['src']))
 else
     $source = 'std';
 
+if (isset($_REQUEST['nopg']))
+    $usepagoda = false;
+else
+    $usepagoda = true;
+
+
+if (isset($_REQUEST['allor']))
+    $allor = true;
+else
+    $allor = false;
+
+
 // remove anything after the @
-$splitforrawcode = explode('@', $partcode);
+$splitforrawcode = explode('@', $fullpartcode);
 
 $partcode = $splitforrawcode[0];
 
@@ -58,7 +70,29 @@ if (file_exists($manual_images_path . $partcode . '.jpg')) {
      */
     echo $manual_images_url . $partcode . '.jpg';
     exit();
+} elseif (file_exists($manual_images_path . $fullpartcode . '.jpg')) {
+    /* echo "<pre>";
+      var_dump($_SERVER);
+      echo "</pre>";
+     */
+    echo $manual_images_url . $fullpartcode . '.jpg';
+    exit();
+} elseif (file_exists($manual_images_path . str_replace('+', ' ',$partcode) . '.jpg')) {
+    /* echo "<pre>";
+      var_dump($_SERVER);
+      echo "</pre>";
+     */
+    echo $manual_images_url . str_replace('+', ' ',$partcode) . '.jpg';
+    exit();
+} elseif (file_exists($manual_images_path . str_replace('+', ' ', $fullpartcode) . '.jpg')) {
+    /* echo "<pre>";
+      var_dump($_SERVER);
+      echo "</pre>";
+     */
+    echo $manual_images_url . str_replace('+', ' ', $fullpartcode) . '.jpg';
+    exit();
 } else {
+
 
     // no manaually sourced, image, go huntiung for Open Range matchup
     $stmt = $db->prepare("SELECT product_id, image, manufacturer FROM epic_or_products WHERE oracle_part_no = :partcode LIMIT 1");
@@ -82,14 +116,42 @@ if (file_exists($manual_images_path . $partcode . '.jpg')) {
             }
         } else {
             // src == mp - attempt to get from media pool
-            $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id AND media_type='IMG' order by GREATEST(width,height) DESC, display_order ASC LIMIT 1");
+            // We either try to get the biggest and best, or a list of all images
+            if ($allor) {
+                $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id AND media_type='IMG' order by display_order ASC"); // get all OR images from mediapool
+            } else {
+                $stmt = $db->prepare("SELECT id, url FROM epic_or_mediapool WHERE product_id = :id AND media_type='IMG' order by GREATEST(width,height) DESC, display_order ASC LIMIT 1");
+            }
             $stmt->bindValue(':id', $rows[0]['product_id'], PDO::PARAM_STR);
             $stmt->execute();
             $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             if (!empty($media)) {
-                $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=', 'http://product-api.gopagoda.com/get/', urldecode($media[0]['url']));
-                echo $url . '.jpg';
+
+                $imageurls = array();
+
+                foreach($media as $m) {
+                    if ($usepagoda) {
+                        // default is to use pagodabox to give nice URLs like /get/partcode.jpg (this is what JDW want). Pagodabox has a .htaccess which rewrites the URL
+                        //$url = str_replace('http://mediapool.getthespec.com/media.jpg?m=', 'http://product-api.gopagoda.com/get/', urldecode($media[0]['url']));
+
+                        // RCH 20150309
+                        // Decommisioned PagodaBox and moved to ma-webproxy-04::/var/www/html/exmicrosites/apps/product_api/get
+                        $url = str_replace('http://mediapool.getthespec.com/media.jpg?m=', 'http://apps2.exertismicro-p.co.uk/product_api/get/', urldecode($media[0]['url']));
+                        $imageurls[] = $url . '.jpg';
+                    } else {
+                        $url = urldecode($media[0]['url']);
+                        $imageurls[] = $url;
+                    }
+                }
+
+                if ($allor) {
+                    // return as json array
+                    echo json_encode($imageurls,JSON_UNESCAPED_SLASHES);
+                } else {
+                    // return single url
+                    echo $imageurls[0];
+                }
                 exit();
             }
         } // if source

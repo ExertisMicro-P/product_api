@@ -25,6 +25,8 @@ class UploadForm extends Model
             [['filename'], 'safe'],
             //[['filename'], 'file', 'extensions'=>'jpg, gif, png'],
             [['filename'], 'file', 'extensions'=>'jpg'],
+
+            [['imageFiles'], 'file', 'skipOnEmpty' => false, 'extensions' => 'png, jpg', 'maxFiles' => 4],
         ];
     }
 }

@@ -123,23 +123,36 @@ class SiteController extends Controller
         //Yii::$app->request->enableCsrfValidation = false;
 
         $model = new UploadForm;
-        if ($model->load(Yii::$app->request->post())) {
-            // get the uploaded file instance. for multiple file uploads
-            // the following data will return an array
-            $image = UploadedFile::getInstance($model, 'filename');
-            $images = UploadedFile::getInstance($model, 'images');
 
-            // store the source file name
+        if (empty(Yii::$app->params['uploadPath'])) {
+            Yii::$app->session->setFlash('error', 'Please configure the upload path') ;
+
+        } elseif ($model->load(Yii::$app->request->post())) {
+            return $this->loadImages($model);
+        }
+        return $this->render('index', [
+            'model'=>$model,
+        ]);
+    } // actionIndex
+
+    /**
+     * LOAD IMAGES
+     * ===========
+     * The path to save file should be configured in uploadPath in
+     * Yii::$app->params
+     *
+     * @param $model
+     *
+     * @return \yii\web\Response
+     */
+    private function loadImages ($model) {
+        $images = UploadedFile::getInstances($model, 'images');
+
+        foreach ($images as $image) {
             $model->filename = $image->name;
-            $ext = end((explode(".", $image->name)));
-
-            // generate a unique file name
-            //$model->avatar = Yii::$app->security->generateRandomString().".{$ext}";
-
-            // the path to save file, you can set an uploadPath
-            // in Yii::$app->params (as used in example below)
-            // remove anything after the @
             $path_parts = pathinfo($model->filename);
+            $ext = $path_parts['extension'] ;
+
             $splitforrawcode = explode('@', $path_parts['filename']);
             $partcode = $splitforrawcode[0];
 
@@ -150,18 +163,14 @@ class SiteController extends Controller
 
             if ($image->saveAs($path)) {
                 $model->savedTo = $path;
+
                 Yii::$app->session->setFlash('imageUploaded');
-                return $this->render('uploaded', ['model'=>$model]);
+
             } else {
-                 Yii::$app->session->setFlash('imageNotUploaded');
-                 return $this->render('uploaded', ['model'=>$model]);
+                Yii::$app->session->setFlash('imageNotUploaded');
             }
 
             return $this->redirect(['uploaded', $model]);
-
         }
-        return $this->render('index', [
-            'model'=>$model,
-        ]);
-    } // actionIndex
+    }
 }

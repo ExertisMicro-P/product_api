@@ -111,9 +111,10 @@ class SiteController extends Controller
     }
 
 
-    public function actionUploaded($model)
+    //public function actionUploaded($model)
+    public function actionUploaded()
     {
-
+        return $this->render('uploaded');
     }
 
 
@@ -170,7 +171,8 @@ class SiteController extends Controller
                 Yii::$app->session->setFlash('imageNotUploaded');
             }
 
-            return $this->redirect(['uploaded', $model]);
+            //return $this->redirect(['site/uploaded', 'model'=>$model]);
+            return $this->redirect(['site/uploaded']);
         }
     }
 }
